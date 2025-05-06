@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Car Racing Game</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #111;
+    }
+
+    canvas {
+      display: block;
+      margin: auto;
+      background-color: #333;
+    }
+
+    .score {
+      font-size: 20px;
+      color: white;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }
+
+    .game-over {
+      font-size: 30px;
+      color: red;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="gameCanvas" width="500" height="800"></canvas>
+<div class="score">Score: 0</div>
+<div class="game-over" style="display: none;">Game Over!</div>
+
+<script>
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+
+  let carWidth = 50;
+  let carHeight = 100;
+  let carX = canvas.width / 2 - carWidth / 2;
+  let carY = canvas.height - carHeight - 20;
+  let carSpeed = 8;
+  let leftKey = false;
+  let rightKey = false;
+  let score = 0;
+  let gameOver = false;
+  let obstacles = [];
+
+  const car = new Image();
+  car.src = 'https://img.icons8.com/ios/452/car.png'; // You can use any car image
+
+  // Handle keyboard inputs for left and right movement
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') leftKey = true;
+    if (e.key === 'ArrowRight') rightKey = true;
+  });
+
+  document.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowLeft') leftKey = false;
+    if (e.key === 'ArrowRight') rightKey = false;
+  });
+
+  // Generate obstacles at random positions
+  function createObstacle() {
+    let obstacleWidth = 50 + Math.random() * 100;
+    let obstacleX = Math.random() * (canvas.width - obstacleWidth);
+    let obstacleSpeed = 2 + Math.random() * 3;
+    obstacles.push({ x: obstacleX, y: -100, width: obstacleWidth, height: 20, speed: obstacleSpeed });
+  }
+
+  // Move obstacles
+  function moveObstacles() {
+    for (let i = 0; i < obstacles.length; i++) {
+      obstacles[i].y += obstacles[i].speed;
+      if (obstacles[i].y > canvas.height) {
+        obstacles.splice(i, 1);
+        score++;
+      }
+    }
+  }
+
+  // Check for collision
+  function checkCollision() {
+    for (let i = 0; i < obstacles.length; i++) {
+      if (
+        carX < obstacles[i].x + obstacles[i].width &&
+        carX + carWidth > obstacles[i].x &&
+        carY < obstacles[i].y + obstacles[i].height &&
+        carY + carHeight > obstacles[i].y
+      ) {
+        gameOver = true;
+        document.querySelector('.game-over').style.display = 'block';
+      }
+    }
+  }
+
+  // Update car position
+  function moveCar() {
+    if (leftKey && carX > 0) carX -= carSpeed;
+    if (rightKey && carX < canvas.width - carWidth) carX += carSpeed;
+  }
+
+  // Draw everything on canvas
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw car
+    ctx.drawImage(car, carX, carY, carWidth, carHeight);
+
+    // Draw obstacles
+    for (let i = 0; i < obstacles.length; i++) {
+      ctx.fillStyle = 'red';
+      ctx.fillRect(obstacles[i].x, obstacles[i].y, obstacles[i].width, obstacles[i].height);
+    }
+
+
+    // Draw score
+    document.querySelector('.score').textContent = `Score: ${score}`;
+
+    if (gameOver) return;
+
+    moveCar();
+    moveObstacles();
+    checkCollision();
+    requestAnimationFrame(draw);
+  }
+
+  // Start the game  and enjoy it with amazing website now its all yours 
+  function startGame() {
+    setInterval(createObstacle, 1000); // Create new obstacle every second
+    draw();
+  }
+
+  startGame();
+</script>
+
+</body>
+</html>
